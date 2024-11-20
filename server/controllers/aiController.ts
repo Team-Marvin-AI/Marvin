@@ -10,6 +10,7 @@ const apiKey = process.env.OPEN_AI_API_KEY as string
 
 // generate inital question
 export const firstQuestion: RequestHandler = async (_req, res, next) => {
+  
   // system instructions
   const instructRole = 'You are a question generator to guess a Marvel character. '
   const instructGoal = 'You want to generate a random open ended question that the user can answer. '
@@ -17,15 +18,36 @@ export const firstQuestion: RequestHandler = async (_req, res, next) => {
 
   const systemMessage = instructRole + instructGoal + instructFormat
   try {
-    const question = await openai.chat.completion.create({
+    const question = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages:
       [{ 
         role: 'system',
         content: systemMessage
-      }]
+      }],
+      temperature: 1.0,
     })
-    
+
+    const { content } = question.choices[0].message;
+    if (!content) {
+      const error: ServerError = {
+        log: "OpenAI did not generate a question",
+        status: 500,
+        message: {err: 'An error occured while generating a question'}
+      }
+      return next(error)
+    }
+
+    res.locals.initalQuestion = content;
+    console.log('question generated: ', content);
+    return next();
+
+  } catch (err) {
+    const error: ServerError = {
+      log: `firstQuestion: ${err}`,
+      status: 500,
+      message: { err: 'An error occured while querying OpenAI for the first question'}
+    }
   }
 };
 
@@ -43,7 +65,6 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
     return next(error);
   }
 
-  // openai API request
 
     // system instructions
     const instructRole = 'You are a Marval assistant that is trying to guess the user\'s Marval character. '
@@ -51,9 +72,10 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
     const instructFormat = 'You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value], character: [character]}'
 
     const systemMessage = instructRole + instructGoal + instructFormat
-
+    
+    // openai API request
     try {
-      const response = await openai.chat.completion.create({
+      const response = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           {
