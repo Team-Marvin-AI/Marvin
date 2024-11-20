@@ -6,9 +6,30 @@ const openai = new OpenAI({
   organization: process.env.OPEN_AI_ORGANIZATION as string,
   project: process.env.OPEN_AI_PROJECT as string,
 });
-
 const apiKey = process.env.OPEN_AI_API_KEY as string
 
+// generate inital question
+export const firstQuestion: RequestHandler = async (_req, res, next) => {
+  // system instructions
+  const instructRole = 'You are a question generator to guess a Marvel character. '
+  const instructGoal = 'You want to generate a random open ended question that the user can answer. '
+  const instructFormat = 'Make a short quizitive question for the user to answer. Do not exceed 200 characters.'
+
+  const systemMessage = instructRole + instructGoal + instructFormat
+  try {
+    const question = await openai.chat.completion.create({
+      model: 'gpt-4o-mini',
+      messages:
+      [{ 
+        role: 'system',
+        content: systemMessage
+      }]
+    })
+    
+  }
+};
+
+// all subsequent questions/answers/certainty
 export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
   const { userAnswer } = res.locals;
 
@@ -23,8 +44,8 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
   }
 
   // openai API request
-  async function getAIResponse(text: string) {
-    
+
+    // system instructions
     const instructRole = 'You are a Marval assistant that is trying to guess the user\'s Marval character. '
     const instructGoal = 'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. '
     const instructFormat = 'You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value], character: [character]}'
@@ -58,6 +79,8 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
       }
 
       res.locals.aiResponse = content;
+      console.log('after getAIResponse: ', res.locals.aiResponse)
+      return next()
     }
     catch (err) {
       const error: ServerError = {
@@ -67,8 +90,5 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
       };
       return next(error);
     }
-  };
-
-  getAIResponse(userAnswer);
 
 };
