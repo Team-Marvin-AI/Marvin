@@ -54,6 +54,7 @@ export const firstQuestion: RequestHandler = async (_req, res, next) => {
 // all subsequent questions/answers/certainty
 export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
   const { userAnswer } = res.locals;
+  const { cachedResponses } = res.locals;
 
   // error handling if we dont have a userAnswer
   if (!userAnswer) {
@@ -69,7 +70,7 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
     // system instructions
     const instructRole = 'You are a Marval assistant that is trying to guess the user\'s Marval character. '
     const instructGoal = 'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. '
-    const instructFormat = 'You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value], character: [character]}'
+    const instructFormat = `If there is a history log of previous questions and answers it will be in objects within an array here: ${cachedResponses}. You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value], character: [character]}`
 
     const systemMessage = instructRole + instructGoal + instructFormat
     
