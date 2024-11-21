@@ -81,7 +81,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. ';
   const instructFormat = `If there is a history log of previous questions and answers it will be in objects within an array here: ${JSON.stringify(
     cachedResponses
-  )}. You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value MUST be in decimal], character: [character]}`;
+  )}. You are to respond only in a JSON object like this: {\"nextQuestion\": [question], \"certainty\": [certainty value MUST be in decimal], \"character\": [character]}`;
   console.log('instruction: ', instructFormat);
 
   const systemMessage = instructRole + instructGoal + instructFormat;
@@ -115,7 +115,6 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     }
 
     res.locals.aiResponse = content;
-    console.log('after getAIResponse: ', res.locals.aiResponse);
     return next();
   } catch (err) {
     const error: ServerError = {
