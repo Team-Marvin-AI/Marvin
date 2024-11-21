@@ -1,12 +1,13 @@
 import { RequestHandler } from 'express';
 import { ServerError } from '../../types/types'
 import OpenAI from "openai";
+import "dotenv/config";
 
 const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY as string,
   organization: process.env.OPEN_AI_ORGANIZATION as string,
   project: process.env.OPEN_AI_PROJECT as string,
 });
-const apiKey = process.env.OPEN_AI_API_KEY as string
 
 // generate inital question
 export const firstQuestion: RequestHandler = async (_req, res, next) => {
@@ -72,6 +73,7 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
     const instructRole = 'You are a Marval assistant that is trying to guess the user\'s Marval character. '
     const instructGoal = 'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. '
     const instructFormat = `If there is a history log of previous questions and answers it will be in objects within an array here: ${cachedResponses}. You are to respond only in an object like this: {nextQuestion: [question], certainty: [certainty value], character: [character]}`
+    console.log('here')
 
     const systemMessage = instructRole + instructGoal + instructFormat
     
@@ -89,7 +91,7 @@ export const queryOpenAIChat:RequestHandler = async(_req, res, next) => {
             content: userAnswer
           }
         ],
-        temperature: 0.8,
+        temperature: 1.0,
       })
 
       const { content } = response.choices[0].message;
