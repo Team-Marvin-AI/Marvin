@@ -78,7 +78,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
   const instructRole =
     "You are a Marval assistant that is trying to guess the user's Marval character. ";
   const instructGoal =
-    'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. ';
+    'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. Only ask one question at a time. if your certainty is 0.8 or more, you must include a character in the response. ';
   const instructFormat = `If there is a history log of previous questions and answers it will be in objects within an array here: ${JSON.stringify(
     cachedResponses
   )}. You are to respond only in a JSON object like this: {\"nextQuestion\": [question], \"certainty\": [certainty value MUST be in decimal], \"character\": [character]}`;
