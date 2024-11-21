@@ -8,7 +8,7 @@ marvinRouter.post(
   '/chat',
   userController.getString,
   queryOpenAIChat,
-  (req: Request, res: Response) => {
+  (req, res) => {
     return res.status(200).json({
       userResponse: res.locals.userResponse,
       aiResponse: res.locals.aiResponse,
@@ -20,7 +20,7 @@ marvinRouter.post(
 marvinRouter.get(
     '/chat',
     firstQuestion,
-    (req: Request, res: Response) => {
+    (_req, res) => {
       const initialQuestion = res.locals.initialQuestion;
       if (!initialQuestion) {
         return res.status(500).json({ error: 'Failed to generate the first question.' });

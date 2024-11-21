@@ -1,4 +1,4 @@
-export const postUserInput = async (userInput: string, aiResponse: string) => {
+export const postUserInput = async (userAnswer: string, aiResponse: string) => {
   try {
     const response = await fetch('/marvin/chat', {
       method: 'POST',
@@ -6,14 +6,16 @@ export const postUserInput = async (userInput: string, aiResponse: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        'userInput': userInput,
+        'userInput': userAnswer,
         'aiResponse': aiResponse,
       }),
     });
-    if (!response.ok) {
+    console.log('postuserinput: ', response.ok)
+    if (response.ok === false) {
       throw new Error('Error trying sending post request with user input');
     }
-    const data = await response.json();
+    const data = await response.json(); 
+    console.log("data: ", data)
     return data;
   } catch (error) {
     console.log((error as Error).message || 'Error sending user input to AI');

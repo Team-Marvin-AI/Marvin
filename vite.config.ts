@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   server: {
     proxy: {
-      '/api': {
-        target: 'http://localhost:3000', // Replace with your Express server port
+      '/marvin': {
+        target: 'http://localhost:8080', // Replace with your Express server port
         changeOrigin: true,
       },
     },

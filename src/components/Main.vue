@@ -20,7 +20,7 @@ onMounted(async () => {
 
   try {
     aiResponse.value = await getAiResponse();
-    typingEffect(response, 20, (text) => {
+    typingEffect(aiResponse, 20, (text) => {
       displayedResponse.value = text;
     });
   } catch (error) {
@@ -44,7 +44,7 @@ const handleSubmit = async () => {
   //logic to decide what to display base on AI certainty
   const response = await postUserInput(userInput.value, aiResponse.value);
   console.log(userInput.value);
-  if (!response.ok || !response) {
+  if (response.ok === false || !response) {
     throw new Error('Error getting AI response');
   }
 
@@ -68,7 +68,7 @@ const handleYes = () => {
 //move on to the next question if AI is wrong
 const handleNo = () => {
   aiResponse.value = JSON.parse(
-    localStorage.getItem('aiResponse')
+    localStorage.getItem('aiResponse')!
   ).nextQuestion;
   decision.value = false;
 };
@@ -89,7 +89,7 @@ const handleNo = () => {
       />
       <button @click="handleSubmit">SEND</button>
     </div>
-    <div v-if="decision.value" class="decision">
+    <div v-if="decision" class="decision">
       <button @click="handleYes">YES</button>
       <button @click="handleNo">NO</button>
     </div>

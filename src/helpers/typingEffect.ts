@@ -1,5 +1,5 @@
 export const typingEffect = (
-  text: string,
+  text: any,
   interval: number,
   callback: (text: string) => void
 ) => {
