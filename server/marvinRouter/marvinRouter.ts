@@ -18,7 +18,7 @@ marvinRouter.post(
 
 
 marvinRouter.get(
-    '/firstq',
+    '/chat',
     firstQuestion,
     (req: Request, res: Response) => {
       const initialQuestion = res.locals.initialQuestion;
