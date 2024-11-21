@@ -21,7 +21,7 @@ marvinRouter.get(
     '/firstq',
     firstQuestion,
     (req: Request, res: Response) => {
-      const initialQuestion = res.locals.initalQuestion;
+      const initialQuestion = res.locals.initialQuestion;
       if (!initialQuestion) {
         return res.status(500).json({ error: 'Failed to generate the first question.' });
       }

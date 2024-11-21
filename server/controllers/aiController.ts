@@ -38,7 +38,7 @@ export const firstQuestion: RequestHandler = async (_req, res, next) => {
       return next(error)
     }
 
-    res.locals.initalQuestion = content;
+    res.locals.initialQuestion = content;
     console.log('question generated: ', content);
     return next();
 
@@ -48,6 +48,7 @@ export const firstQuestion: RequestHandler = async (_req, res, next) => {
       status: 500,
       message: { err: 'An error occured while querying OpenAI for the first question'}
     }
+    return next(error)
   }
 };
 
