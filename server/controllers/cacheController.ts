@@ -1,9 +1,20 @@
 import { json, RequestHandler } from 'express';
-import { appendFile, readFile, writeFile } from 'node:fs/promises';
+import {
+  appendFile,
+  readFile,
+  writeFile,
+  mkdir,
+  access,
+} from 'node:fs/promises';
 import { join } from 'path';
 
 const cachePath = join(__dirname, './logs/cache.json');
 const logPath = join(__dirname, './logs/log.txt');
+const logFolderPath = join(__dirname, '../logs');
+
+async function makeLogDirectory() {
+  await mkdir(logFolderPath);
+}
 
 export const logResponse: RequestHandler = async (req, res, next) => {
   //Extract data from res.locals
@@ -47,8 +58,22 @@ export const logResponse: RequestHandler = async (req, res, next) => {
   `;
   //Write data to log file
   try {
+    await access(logFolderPath);
+  } catch {
+    try {
+      await makeLogDirectory();
+    } catch (err) {
+      const error = {
+        log: `logResponse in cache controller could not create log directory. Received error: ${err}`,
+        status: 500,
+        message: { err: 'An error ocurred logging AI data' },
+      };
+      return next(error);
+    }
+  }
+  try {
     await appendFile(logPath, log);
-    //next();
+    next();
   } catch (err) {
     const error = {
       log: `logResponse in cache controller could not write to file. Received error: ${err}`,
@@ -80,6 +105,22 @@ export const cacheResponse: RequestHandler = async (req, res, next) => {
       message: { err: 'An error ocurred logging AI data' },
     };
     return next(error);
+  }
+
+  try {
+    await access(logFolderPath);
+  } catch {
+    try {
+      await makeLogDirectory();
+      await writeFile(cachePath, JSON.stringify([]));
+    } catch (err) {
+      const error = {
+        log: `cacheResponse in cache controller could not create log directory. Received error: ${err}`,
+        status: 500,
+        message: { err: 'An error ocurred logging AI data' },
+      };
+      return next(error);
+    }
   }
 
   //retrieve current cashed values
