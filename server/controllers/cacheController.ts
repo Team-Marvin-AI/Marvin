@@ -6,10 +6,13 @@ import {
   mkdir,
   access,
 } from 'node:fs/promises';
-import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { join, dirname } from 'path';
 
-const cachePath = join(__dirname, './logs/cache.json');
-const logPath = join(__dirname, './logs/log.txt');
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const cachePath = join(__dirname, '../logs/cache.json');
+const logPath = join(__dirname, '../logs/log.txt');
 const logFolderPath = join(__dirname, '../logs');
 
 async function makeLogDirectory() {
@@ -19,11 +22,11 @@ async function makeLogDirectory() {
 export const logResponse: RequestHandler = async (req, res, next) => {
   //Extract data from res.locals
   //May need seperate logger for initial question
-  const { aiResponse, initialQuestion, userResponse } = res.locals;
+  const { aiResponse, initialQuestion, userAnswer, aiPrompt } = res.locals;
   let firstLog = true;
   //Error handling for each result
   if (!initialQuestion) {
-    if (!userResponse) {
+    if (!userAnswer) {
       const error = {
         log: 'logResponse in cache controller did not receive user input',
         status: 500,
@@ -46,22 +49,26 @@ export const logResponse: RequestHandler = async (req, res, next) => {
   let log = '';
   if (firstLog) {
     log = `
-    ----------------------AI Prompt---------------------
- 
-    ----------------------AI First Q--------------------
+  ----------------------AI Prompt---------------------
+  
+  ${aiPrompt}
+
+  ----------------------AI First Q--------------------
     
-    ${JSON.stringify(initialQuestion, null, 2)}\n\n`;
+  ${JSON.stringify(initialQuestion, null, 2)}\n\n`;
   } else {
     log = `
   ---------------------User Input---------------------
   
-  ${userResponse}
+  ${userAnswer}
 
   ----------------------AI Prompt---------------------
+  
+  ${aiPrompt}
 
   ----------------------AI Output---------------------
   
-  ${(JSON.stringify(aiResponse), null, 2)}\n\n
+  ${JSON.stringify(aiResponse, null, 2)}\n\n
   `;
   }
   //Write data to log file
@@ -95,10 +102,10 @@ export const logResponse: RequestHandler = async (req, res, next) => {
 export const cacheResponse: RequestHandler = async (req, res, next) => {
   //Extract data from res.locals
   //Front end will send the original question and answer
-  const { aiResponse, userResponse } = res.locals;
+  const { aiResponse, userAnswer } = res.locals;
 
   //Ensure data fields are populated
-  if (!userResponse) {
+  if (!userAnswer) {
     const error = {
       log: 'cacheResponse in cache controller did not receive user input',
       status: 500,
@@ -117,6 +124,11 @@ export const cacheResponse: RequestHandler = async (req, res, next) => {
 
   try {
     await access(logFolderPath);
+    try {
+      await access(cachePath);
+    } catch {
+      await writeFile(cachePath, JSON.stringify([]));
+    }
   } catch {
     try {
       await makeLogDirectory();
@@ -141,7 +153,7 @@ export const cacheResponse: RequestHandler = async (req, res, next) => {
   }
 
   //Add new content to array
-  const content = { aiOutput: aiResponse, userInput: userResponse };
+  const content = { aiOutput: aiResponse, userInput: userAnswer };
   parsedCache.push(content);
 
   try {
@@ -181,6 +193,11 @@ export const retrieveCache: RequestHandler = async (_req, res, next) => {
 };
 
 export const clearCache: RequestHandler = async (_req, _res, next) => {
+  try {
+    await access(logFolderPath);
+  } catch {
+    return next();
+  }
   try {
     //replace content of the cache with an empty array to delete it
     await writeFile(cachePath, JSON.stringify([]));
