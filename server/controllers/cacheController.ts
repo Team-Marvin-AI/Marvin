@@ -20,42 +20,50 @@ export const logResponse: RequestHandler = async (req, res, next) => {
   //Extract data from res.locals
   //May need seperate logger for initial question
   const { aiResponse, initialQuestion, userResponse } = res.locals;
-
+  let firstLog = true;
   //Error handling for each result
-  if (!userResponse) {
-    const error = {
-      log: 'logResponse in cache controller did not receive user input',
-      status: 500,
-      message: { err: 'An error ocurred logging AI data' },
-    };
-    return next(error);
-  }
-  if (!aiResponse) {
-    const error = {
-      log: 'logResponse in cache controller did not receive ai output',
-      status: 500,
-      message: { err: 'An error ocurred logging AI data' },
-    };
-    return next(error);
-  }
   if (!initialQuestion) {
-    const error = {
-      log: 'logResponse in cache controller did not receive ai output',
-      status: 500,
-      message: { err: 'An error ocurred logging AI data' },
-    };
-    return next(error);
+    if (!userResponse) {
+      const error = {
+        log: 'logResponse in cache controller did not receive user input',
+        status: 500,
+        message: { err: 'An error ocurred logging AI data' },
+      };
+      return next(error);
+    }
+    if (!aiResponse) {
+      const error = {
+        log: 'logResponse in cache controller did not receive ai output',
+        status: 500,
+        message: { err: 'An error ocurred logging AI data' },
+      };
+      return next(error);
+    }
+    firstLog = false;
   }
 
   //Create log of the result
-  const log = `
+  let log = '';
+  if (firstLog) {
+    log = `
+    ----------------------AI Prompt---------------------
+ 
+    ----------------------AI First Q--------------------
+    
+    ${JSON.stringify(initialQuestion, null, 2)}\n\n`;
+  } else {
+    log = `
   ---------------------User Input---------------------
+  
   ${userResponse}
+
   ----------------------AI Prompt---------------------
-  ${initialQuestion}
-  ---------------------AI Output----------------------
+
+  ----------------------AI Output---------------------
+  
   ${(JSON.stringify(aiResponse), null, 2)}\n\n
   `;
+  }
   //Write data to log file
   try {
     await access(logFolderPath);
