@@ -63,7 +63,9 @@ const handleSubmit = async () => {
   // console.log(certainty);
   // console.log(character);
   if (response.certainty < 0.8) {
-    displayedResponse.value = response.nextQuestion.join('');
+    typingEffect(response.nextQuestion, 20, (text) => {
+      displayedResponse.value = text;
+    });
   } else {
     displayedResponse.value = `I believe the superhero you are thinking is ${response.character}, am I right?`;
     decision.value = true;
