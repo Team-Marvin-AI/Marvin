@@ -47,7 +47,10 @@ const handleSubmit = async () => {
   }
 
   //logic to decide what to display base on AI certainty
-  const response = await postUserInput(userInput.value, aiResponse.value);
+  const response = await postUserInput(
+    userInput.value,
+    displayedResponse.value
+  );
   if (response.ok === false || !response) {
     throw new Error('Error getting AI response');
   }
@@ -59,8 +62,8 @@ const handleSubmit = async () => {
   // console.log(nextQuestion);
   // console.log(certainty);
   // console.log(character);
-  if (response.certainty) {
-    displayedResponse.value = response.nextQuestion;
+  if (response.certainty < 0.8) {
+    displayedResponse.value = response.nextQuestion.join('');
   } else {
     displayedResponse.value = `I believe the superhero you are thinking is ${response.character}, am I right?`;
     decision.value = true;
@@ -75,7 +78,7 @@ const handleYes = () => {
 
 //move on to the next question if AI is wrong
 const handleNo = () => {
-  aiResponse.value = JSON.parse(
+  displayedResponse.value = JSON.parse(
     localStorage.getItem('aiResponse')!
   ).nextQuestion;
   decision.value = false;

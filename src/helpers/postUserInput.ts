@@ -14,11 +14,8 @@ export const postUserInput = async (userAnswer: string, aiResponse: string) => {
       throw new Error('Error trying sending post request with user input');
     }
     const data = await response.json();
-    console.log(JSON.parse(data.aiResponse));
-    console.log(data.aiResponse['nextQuestion']);
-    console.log(data.aiResponse.certainty);
-    console.log(data.aiResponse.character);
-    return data.aiResponse;
+    const parsedData = JSON.parse(data.aiResponse);
+    return parsedData;
   } catch (error) {
     console.log((error as Error).message || 'Error sending user input to AI');
   }
