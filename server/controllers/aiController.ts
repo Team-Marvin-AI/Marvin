@@ -11,11 +11,11 @@ const openai = new OpenAI({
 
 // generate inital question
 export const firstQuestion: RequestHandler = async (_req, res, next) => {
-  
+  console.log('first question middleware')
   // system instructions
   const instructRole = 'You are a question generator to guess a Marvel character. '
-  const instructGoal = 'You want to generate a random open ended question that the user can answer. '
-  const instructFormat = 'Make a short quizitive question for the user to answer. Do not exceed 200 characters.'
+  const instructGoal = 'You want to generate a random open ended question that the user can give you a hint about the character they are thinking of. '
+  const instructFormat = 'Make a short question for the user to answer. Do not exceed 200 characters.'
 
   const systemMessage = instructRole + instructGoal + instructFormat
   try {
