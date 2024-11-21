@@ -1,6 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import userController from '../userController/userController';
-import { queryOpenAIChat } from '../controllers/aiController';
+import { queryOpenAIChat, firstQuestion } from '../controllers/aiController';
 
 const marvinRouter = express.Router();
 
@@ -15,5 +15,20 @@ marvinRouter.post(
     });
   }
 );
+
+
+marvinRouter.get(
+    '/firstq',
+    firstQuestion,
+    (req: Request, res: Response) => {
+      const initialQuestion = res.locals.initalQuestion;
+      if (!initialQuestion) {
+        return res.status(500).json({ error: 'Failed to generate the first question.' });
+      }
+      return res.status(200).json({
+        question: initialQuestion,
+      });
+    }
+  );
 
 export default marvinRouter;
