@@ -8,7 +8,7 @@ marvinRouter.post(
   '/chat',
   userController.getString,
   queryOpenAIChat,
-  (req, res) => {
+  (_req, res) => {
     return res.status(200).json({
       userResponse: res.locals.userResponse,
       aiResponse: res.locals.aiResponse,
