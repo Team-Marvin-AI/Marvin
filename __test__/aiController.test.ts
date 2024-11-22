@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { firstQuestion } from './aiController.ts'
+import { firstQuestion } from '../server/controllers/aiController.ts'
 // NOT SURE IF WORKS
 
 // mock/simulate behavior of openai API call without actually calling, stores it in mOpenAI
