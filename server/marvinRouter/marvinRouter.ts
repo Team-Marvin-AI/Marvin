@@ -17,12 +17,8 @@ marvinRouter.post(
   cacheResponse,
   retrieveCache,
   queryOpenAIChat,
-<<<<<<< HEAD
-  (_req, res) => {
-=======
   logResponse,
   (req, res) => {
->>>>>>> 848de9b278a2a9d9c4aa023838d794aa6b7a4c82
     return res.status(200).json({
       userResponse: res.locals.userResponse,
       aiResponse: res.locals.aiResponse,
