@@ -18,7 +18,7 @@ export const firstQuestion: RequestHandler = async (_req, res, next) => {
   const instructGoal =
     'You want to generate a random open ended question that the user can give you a hint about the character they are thinking of. ';
   const instructFormat =
-    'Make a short question for the user to answer. Do not exceed 200 characters.';
+    'Make a short question for the user to answer and give me a string. Do not exceed 200 characters.';
 
   const systemMessage = instructRole + instructGoal + instructFormat;
   res.locals.aiPrompt = systemMessage;
@@ -81,8 +81,8 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     'When given a user query, you try to guess the Marvel character the user is thinking about or ask the user more questions to better guess the character. Only ask one question at a time. if your certainty is 0.8 or more, you must include a character in the response. ';
   const instructFormat = `If there is a history log of previous questions and answers it will be in objects within an array here: ${JSON.stringify(
     cachedResponses
-  )}. You are to respond only in a JSON object like this: {\"nextQuestion\": [question], \"certainty\": [certainty value MUST be in decimal], \"character\": [character]}`;
-  console.log('instruction: ', instructFormat);
+  )}. Do not repeat the same questions recorded in the array. You are to respond only in a JSON object like this: {\"nextQuestion\": (question should be in string), \"certainty\": (certainty value MUST be in decimal), \"character\": (character guess)}`;
+  // console.log('instruction: ', instructFormat);
 
   const systemMessage = instructRole + instructGoal + instructFormat;
   res.locals.aiPrompt = systemMessage;
@@ -115,6 +115,7 @@ export const queryOpenAIChat: RequestHandler = async (_req, res, next) => {
     }
 
     res.locals.aiResponse = content;
+    console.log('content: ', content)
     return next();
   } catch (err) {
     const error: ServerError = {
