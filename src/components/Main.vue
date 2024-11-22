@@ -13,25 +13,30 @@ const loadingText = ref<string>('');
 const decision = ref<boolean>(false);
 
 //getting first AI question upon page load
-onMounted(async () => {
-  typingEffect('Waiting on Stan Lee...', 20, (text) => {
-    loadingText.value = text;
-  });
-
-  try {
-    aiResponse.value = await getAiResponse();
-    typingEffect(aiResponse, 20, (text) => {
-      displayedResponse.value = text;
-    });
-  } catch (error) {
-    console.log('Error fetching initial Ai question upon page load');
-  } finally {
-    loading.value = true;
-  }
+onMounted(() => {
   //input focus upon page load
   if (inputRef.value) {
     inputRef.value.focus();
   }
+
+  if (loading.value) {
+    typingEffect('Waiting on Stan Lee...', 20, (text) => {
+      loadingText.value = text;
+    });
+  }
+
+  setTimeout(async () => {
+    try {
+      aiResponse.value = await getAiResponse();
+      typingEffect(aiResponse.value, 20, (text) => {
+        displayedResponse.value = text;
+      });
+    } catch (error) {
+      console.log('Error fetching initial Ai question upon page load');
+    } finally {
+      loading.value = false;
+    }
+  }, 750);
 });
 
 //sending user input to backend
@@ -42,8 +47,10 @@ const handleSubmit = async () => {
   }
 
   //logic to decide what to display base on AI certainty
-  const response = await postUserInput(userInput.value, aiResponse.value);
-  console.log(userInput.value);
+  const response = await postUserInput(
+    userInput.value,
+    displayedResponse.value
+  );
   if (response.ok === false || !response) {
     throw new Error('Error getting AI response');
   }
@@ -51,10 +58,16 @@ const handleSubmit = async () => {
   //store the response in localstorage
   localStorage.setItem('aiResponse', JSON.stringify(response));
 
-  if (response.certainty) {
-    aiResponse.value = response.nextQuestion;
+  // const { nextQuestion, certainty, character } = response;
+  // console.log(nextQuestion);
+  // console.log(certainty);
+  // console.log(character);
+  if (response.certainty < 0.8) {
+    typingEffect(response.nextQuestion, 20, (text) => {
+      displayedResponse.value = text;
+    });
   } else {
-    aiResponse.value = `I blieve the superhero you are thinking is ${response.character}, am I right?`;
+    displayedResponse.value = `I believe the superhero you are thinking is ${response.character}, am I right?`;
     decision.value = true;
   }
   userInput.value = '';
@@ -67,7 +80,7 @@ const handleYes = () => {
 
 //move on to the next question if AI is wrong
 const handleNo = () => {
-  aiResponse.value = JSON.parse(
+  displayedResponse.value = JSON.parse(
     localStorage.getItem('aiResponse')!
   ).nextQuestion;
   decision.value = false;
@@ -77,7 +90,7 @@ const handleNo = () => {
 <template>
   <div className="chat-area">
     <p v-if="loading">{{ loadingText }}</p>
-    <p v-if="aiResponse">{{ aiResponse }}</p>
+    <p v-if="displayedResponse">{{ displayedResponse }}</p>
     <br />
     <div v-if="!decision">
       <input
@@ -108,6 +121,15 @@ const handleNo = () => {
   border: none;
   border-bottom: 1px solid grey;
   background-color: rgba(0, 0, 0, 0);
+}
+
+.chat-area {
+  height: 300px;
+  width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .chat-area button {
